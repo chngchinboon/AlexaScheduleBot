@@ -4,7 +4,7 @@ import time
 
 app = Flask(__name__)
 
-ask=Ask(app,"/AlexaScheduleBot")
+ask=Ask(app,"/Babybot")
 
 def get_schedulelist():    
     #date time comments
@@ -23,15 +23,15 @@ def start_skill():
     welcome_message='Hellow there, would you like to know your saved schedules?'
     return question(welcome_message)
 
-@ask.intent('YesIntent'):
+@ask.intent('GetReminder')
 def share_schedule():
     schedulelist=get_schedulelist()
     for schedule in schedulelist:
-        schedule_msgstr=i['Datetime']+' on '+i['comments']
+        schedule_msgstr=schedule['Datetime']+' on '+schedule['comments']
     schedule_msg='Your current schedules are {}'.format(schedule_msgstr)
     return statement(schedule_msg)
 
-@ask.intent('NoIntent'):
+@ask.intent('NoIntent')
 def no_intent():
     bye_text='Ok... bye'
     return statement(bye_text)
