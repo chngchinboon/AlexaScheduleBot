@@ -3,25 +3,39 @@ Intent schema
 {
     "intents": [
     {
-        "intent": "GetReminder"        
+        "intent": "GetAll"             
     },
+    
     {
-        "intent": "NoIntent"        
+        "intent": "GetAppointments"        
     },    
+     
+    {
+        "intent": "GetMedication"        
+    },    
+     
+    {
+        "intent": "GetFood"        
+    },    
+     
+    {
+        "intent": "AMAZON.StopIntent"        
+    },     
                 
     ]
 }
 
 #for reference    
 {
-    "intent": "GetReminder"
+    "intent": "GetAppointments"        
     "slots":[
-    {
-      "name": "Term",
-      "type": "LIST_OF_TERMS"
-    }
-  ]
-}    
+        {
+          "name": "TimeFrame",
+          "type": "LIST_OF_TERMS"
+        }
+    ]
+},    
+  
     
  
     
@@ -29,12 +43,25 @@ Intent schema
     
 Sample Utterances
 
-GetReminder what are reminders do i have
-GetReminder to remind me
-GetReminder remind me
-GetReminder to refresh me
-GetReminder to tell me my reminders
-GetReminder to give me my reminders
+GetAppointments what appointments do i have {TimeFrame}
+GetAppointments who do i need to meet {TimeFrame}
+GetAppointments meet who {TimeFrame}
+
+GetMedication what medicine do i need to eat
+GetMedication what medication do i need to eat
+GetMedication what medicine
+GetMedication medicine eat what
+GetMedication what medication
+
+GetFood what do i need to eat
+GetFood what should i eat
+GetFood eat what
+
+GetAll list all my reminders
+GetAll tell me everything
+GetAll to refresh me
+GetAll remind me of everything
+GetAll to remind me all
 
 
 NoIntent no
