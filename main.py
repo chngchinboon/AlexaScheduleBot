@@ -1,12 +1,11 @@
 from flask import Flask
-from flask_ask import Ask, statement, question, session
+from flask_ask import Ask, statement, question, session, context, request, version
 import time
 
 import sqlite3
 
 
 app = Flask(__name__)
-
 ask=Ask(app,"/Babybot")
 
 def dict_factory(cursor, row):
@@ -21,7 +20,8 @@ def get_infofromdb(tablename):
     exampledatestr=time.strftime('%a, %d %b %Y %H:%M:%S',exampledate)
     examplecomment='Dental checkup at TTSH'
     schedulelist=[{'Datetime':exampledatestr,'comments':examplecomment}]
-    '''
+    ''' 
+    
     #get from database
     db = sqlite3.connect('data/testdb')
     db.row_factory = dict_factory
@@ -32,10 +32,36 @@ def get_infofromdb(tablename):
     db.close()
     return infolist
 
+def get_msg_info():
+    msg_info={}
+    msg_info["Request ID"]=request.requestId
+    msg_info["Request Type"]=request.type
+    msg_info["Request Timestamp"]=request.timestamp
+    msg_info["Session New"]=session.new
+    msg_info["User ID"]=session.user.userId
+    msg_info["Alexa Version"]=version
+    msg_info["Device ID"]=context.System.device.deviceId
+
+    return msg_info
+
+def log_usage(deviceID,msg_info,usage_info):
+    #store usage into a database table
+    tablename='usage'
+    db = sqlite3.connect('data/testdb')
+    #db.row_factory = dict_factory
+    cursor = db.cursor()
+
+    cursor.execute('insert * into '+ tablename +' where username = msg_info["Device ID"]')    
+    db.close() #might want to try using 'with' instead.
+    
+    
 def get_appointment_msg():
     print('Getting Appointments')
-    tablename='appointment'
-        
+    
+    msg_info=get_msg_info()
+    print(msg_info)
+    
+    tablename='appointment'    
     appointmentslist=get_infofromdb(tablename)
     '''
     id INTEGER PRIMARY KEY,
@@ -73,6 +99,11 @@ def get_appointment_msg():
     return appointment_msg
 
 def get_medication_msg():
+    print('Getting Medication')
+        
+    msg_info=get_msg_info()
+    print(msg_info)
+    
     tablename='medication'
     medicationlist=get_infofromdb(tablename)
     '''
@@ -112,6 +143,11 @@ def get_medication_msg():
     return medication_msg
 
 def get_food_msg():
+    print('Getting Food')
+    
+    msg_info=get_msg_info()
+    print(msg_info)
+    
     tablename='food'
     foodlist=get_infofromdb(tablename)
     '''
@@ -177,7 +213,7 @@ def stop_intent():
     return statement(bye_text)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True) #need to change to False when pushing to production
 
 
 
