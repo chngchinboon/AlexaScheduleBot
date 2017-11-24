@@ -7,7 +7,11 @@ Intent schema
     },
     
     {
-        "intent": "GetAppointments"        
+        "intent": "GetAppointments",
+        "slots":[{
+              "name": "TimeFrame",
+              "type": "AMAZON.DATE"
+                  }]        
     },    
      
     {
@@ -16,9 +20,16 @@ Intent schema
      
     {
         "intent": "GetFood"        
-    },    
-     
+    },
+
     {
+        "intent": "GetHelp"
+    },
+
+    {
+        "intent": "GetPledge"
+    },
+        {
         "intent": "AMAZON.StopIntent"        
     },     
                 
@@ -27,11 +38,11 @@ Intent schema
 
 #for reference    
 {
-    "intent": "GetAppointments"        
+    "intent": "GetAppointments",        
     "slots":[
         {
           "name": "TimeFrame",
-          "type": "LIST_OF_TERMS"
+          "type": "AMAZON.DATE"
         }
     ]
 },    
@@ -62,6 +73,17 @@ GetAll tell me everything
 GetAll to refresh me
 GetAll remind me of everything
 GetAll to remind me all
+
+GetHelp help me please
+GetHelp please help
+GetHelp please send help
+GetHelp I've fallen please send help
+
+GetPledge pledge me
+GetPledge what's new today
+GetPledge how are you today
+GetPledge would you talk to me please
+GetPledge talk to me
 
 
 NoIntent no
