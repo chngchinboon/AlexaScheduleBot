@@ -1,0 +1,23 @@
+GetPledge would you talk to me, please
+GetPledge what’s new today
+GetPledge how are you today
+GetPledge to talk to me
+GetAll list all my reminders
+GetAll to refresh me
+GetAll remind me of everything
+GetAll to remind me all
+GetAppointments what appointments do i have
+GetAppointments who do i need to meet
+GetAppointments meet who
+GetMedication what medicine do i need to eat
+GetMedication what medication do i need to eat
+GetMedication what medicine
+GetMedication medicine eat what
+GetMedication what medication
+GetFood what do i need to eat
+GetFood what should i eat
+GetFood eat what
+GetHelp help me
+GetHelp save me
+GetHelp please get help
+GetHelp i've fallen and can't get up

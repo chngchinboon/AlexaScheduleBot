@@ -1,0 +1,31 @@
+{
+    "intents": [
+        {
+            "intent": "GetAppointments"
+        },
+        {
+            "intent": "GetMedication"
+        },
+        {
+            "intent": "GetFood"
+        },
+        {
+            "intent": "GetAll"
+        },
+        {
+            "intent": "GetHelp"
+        },
+        {
+            "intent": "GetPledge"
+        },
+        {
+            "intent": "AMAZON.HelpIntent"
+        },
+        {
+            "intent": "AMAZON.StopIntent"
+        },
+        {
+            "intent": "AMAZON.CancelIntent"
+        }
+    ]
+}
