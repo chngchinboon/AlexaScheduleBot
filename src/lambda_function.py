@@ -1,6 +1,6 @@
 # Based off https://github.com/ModusCreateOrg/alexa-skill-demo/blob/master/lambda_function.py
-import urllib2
-import json
+#import urllib2
+#import json
 
 
 def lambda_handler(event, context):
@@ -38,7 +38,7 @@ def on_intent(intent_request, session):
     elif intent_name == "GetMedication":
         return get_medication()
     elif intent_name == "GetFood":
-        return get_food(intent)
+        return get_food()
     elif intent_name == "GetAll":
         return get_all()
     elif intent_name == "GetHelp":
@@ -111,11 +111,11 @@ def build_response(session_attributes, speechlet_response):
 
 ################## Custom functions ##########################
 
-def get_appointment(TimeFrame):
+def get_appointment():
     session_attributes = {}
     card_title = "Get Appointments"
     reprompt_text = ""
-    should_end_session = False
+    should_end_session = True
 
     speech_output = "You have 1 appointment.  Dental Checkup. On: Sat, 13 Jan 2018, 2:10 PM. With: Dr Chin at: TTSH."
 
@@ -123,11 +123,11 @@ def get_appointment(TimeFrame):
         card_title, speech_output, reprompt_text, should_end_session))
 
 
-def get_medication(TimeFrame):
+def get_medication():
     session_attributes = {}
     card_title = "Get Medications"
     reprompt_text = ""
-    should_end_session = False
+    should_end_session = True
 
     speech_output = "You have 2 medications to take.  Medication 1:. 1 tablet Panadol after meal. do not eat before meal. Medication 2:. 2 tablets Lasix at 03:10 PM."
 
@@ -135,11 +135,11 @@ def get_medication(TimeFrame):
         card_title, speech_output, reprompt_text, should_end_session))
 
 
-def get_food(TimeFrame):
+def get_food():
     session_attributes = {}
     card_title = "Get Food"
     reprompt_text = ""
-    should_end_session = False
+    should_end_session = True
 
     speech_output = "Please eat Breakfast everyday"
 
@@ -147,11 +147,11 @@ def get_food(TimeFrame):
         card_title, speech_output, reprompt_text, should_end_session))
 
 
-def get_all(TimeFrame):
+def get_all():
     session_attributes = {}
-    card_title = "Get Food"
+    card_title = "Get All"
     reprompt_text = ""
-    should_end_session = False
+    should_end_session = True
 
     speech_output = "You have 1 appointment.  Dental Checkup. On: Sat, 13 Jan 2018, 2:10 PM. With: Dr Chin at: TTSH. " \
                     "You have 2 medications to take.  Medication 1:. 1 tablet Panadol after meal. do not eat before meal. Medication 2:. 2 tablets Lasix at 03:10 PM. " \
@@ -165,7 +165,7 @@ def get_help():
     session_attributes = {}
     card_title = "Get Help"
     reprompt_text = "Do you need an ambulance?"
-    should_end_session = False
+    should_end_session = True
 
     speech_output = "Help is on the way"
 
@@ -177,7 +177,7 @@ def get_pledge():
     session_attributes = {}
     card_title = "Get Pledge"
     reprompt_text = ""
-    should_end_session = False
+    should_end_session = True
 
     speech_output = "I’m so glad you asked. Do you know that you have received well wishes from the community through the Silver Bow pledge campaign? " \
                     "Today, James would like to send you a message to thank you for contributing to build Singapore into what it is today."
