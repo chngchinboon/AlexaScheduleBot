@@ -109,6 +109,7 @@ def build_response(session_attributes, speechlet_response):
         "response": speechlet_response
     }
 
+################## Custom functions ##########################
 
 def get_appointment(TimeFrame):
     session_attributes = {}

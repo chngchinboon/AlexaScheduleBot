@@ -1,0 +1,98 @@
+// Intent schema
+{
+    "intents": [
+    {
+        "intent": "GetAll",
+        "slots":[{
+              "name": "TimeFrame",
+              "type": "AMAZON.DATE"
+                  }]
+    },
+    
+    {
+        "intent": "GetAppointments",
+        "slots":[{
+              "name": "TimeFrame",
+              "type": "AMAZON.DATE"
+                  }]        
+    },    
+     
+    {
+        "intent": "GetMedication",
+        "slots":[{
+              "name": "TimeFrame",
+              "type": "AMAZON.DATE"
+                  }]
+    },    
+     
+    {
+        "intent": "GetFood",
+        "slots":[{
+              "name": "TimeFrame",
+              "type": "AMAZON.DATE"
+                  }]
+    },
+
+    {
+        "intent": "GetHelp"
+    },
+
+    {
+        "intent": "GetPledge"
+    },
+        {
+        "intent": "AMAZON.StopIntent"        
+    },     
+                
+    ]
+}
+
+//for reference
+{
+    "intent": "GetAppointments",        
+    "slots":[
+        {
+          "name": "TimeFrame",
+          "type": "AMAZON.DATE"
+        }
+    ]
+},    
+  
+    
+ 
+    
+    
+    
+// Sample Utterances
+
+GetAppointments what appointments do i have {TimeFrame}
+GetAppointments who do i need to meet {TimeFrame}
+GetAppointments meet who {TimeFrame}
+
+GetMedication what medicine do i need to eat {TimeFrame}
+GetMedication what medication do i need to eat {TimeFrame}
+GetMedication what medicine {TimeFrame}
+GetMedication medicine eat what {TimeFrame}
+GetMedication what medication {TimeFrame}
+
+GetFood what do i need to eat {TimeFrame}
+GetFood what should i eat {TimeFrame}
+GetFood eat what {TimeFrame}
+
+GetAll list all my reminders {TimeFrame}
+GetAll tell me everything {TimeFrame}
+GetAll to refresh me {TimeFrame}
+GetAll remind me of everything {TimeFrame}
+GetAll to remind me all {TimeFrame}
+
+GetHelp help me please
+GetHelp please help
+GetHelp please send help
+GetHelp I've fallen please send help
+
+GetPledge pledge me
+GetPledge what's new today
+GetPledge how are you today
+GetPledge would you talk to me please
+GetPledge talk to me
+

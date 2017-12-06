@@ -1,7 +1,9 @@
-import sqlite3
+# import sqlite3
 import logging
+import os
+import requests
 rootLogger = logging.getLogger(__name__)
-
+pica_url = os.environ.get('pica_url')
 
 def get_appointment_msg(msg_info,time_frame):
     rootLogger.info('Getting Appointments')
@@ -16,7 +18,8 @@ def get_appointment_msg(msg_info,time_frame):
                     'time_frame': time_frame,
                     'user_id': msg_info["Device ID"]
                 }
-
+    # [{'date': '2017-12-04T00:00:00.000Z', 'time': '12:00nn', 'service_type': 'Meal Service',
+      # 'assigned_careworker': '####'}]
 
     #rootLogger.info(timeframe)
     appointmentslist = get_info_from_PICA(param)
@@ -187,37 +190,33 @@ def get_info_from_PICA(param):
     exampledatestr=time.strftime('%a, %d %b %Y %H:%M:%S',exampledate)
     examplecomment='Dental checkup at TTSH'
     schedulelist=[{'Datetime':exampledatestr,'comments':examplecomment}]
+    param={'time_frame':{'date_start': "2017-11-01",'date_end': "2017-11-31"},
+           'user_id': []
+           }
     """
 
-    if param['db_name'] == 'devdb':
-        # get from database #to be removed
-        db = sqlite3.connect('../data/testdb')
-        db.row_factory = dict_factory
-        cursor = db.cursor()
-        cursor.execute('select * from ' + param['table_name'] + ' where username = "user1"')
-        data_retrieved = cursor.fetchall()
-        db.close()
-
     # retrieve data from PICA
-    else:
-        # build object to be sent. redundant?
-        data_to_send = {    'Alexa_id' : param['user_id'],
-                            'date_range' : param['time_frame']
-                        }
-        rootLogger.debug(data_to_send)
-        # Send request to PICA
-        # try:
-        #    r = requests.post('http://httpbin.org/post', data = {'key':'value'})
-        #    r = RQ.post(url, json = data_to_send)
 
-        # parse return data from PICA
-        # iso8601.parse_date()
-        # time of the appointment
-        # type of service (e.g. meal service)
-        # assigned healthcare worker
-        # comments (this is optional e.g. assigned careworker will be running late)
-        # data_recieved = r.json()
-        data_retrieved = data_to_send
+    # build object to be sent. redundant?
+    # data_to_send = {    'Alexa_id' : param['user_id'],
+    #                    'date_range' : param['time_frame']
+    #                }
+
+    url = '/'.join([pica_url, param['time_frame']['date_start'], param['time_frame']['date_end'], param['user_id']])
+    rootLogger.debug(url)
+    # Send request to PICA
+    try:
+        # r = requests.post('http://httpbin.org/post', data = {'key':'value'})
+        pica_response = requests.get(url)
+
+    # parse return data from PICA
+    # iso8601.parse_date()
+    # time of the appointment
+    # type of service (e.g. meal service)
+    # assigned healthcare worker
+    # comments (this is optional e.g. assigned careworker will be running late)
+    # data_recieved = r.json()
+    data_retrieved = pica_response.json()
 
     return data_retrieved
 
@@ -242,3 +241,16 @@ def dict_factory(cursor, row):
     for idx, col in enumerate(cursor.description):
         d[col[0]] = row[idx]
     return d
+
+
+''' 
+#Old DB testing
+   if param['db_name'] == 'devdb':
+        # get from database #to be removed
+        db = sqlite3.connect('../data/testdb')
+        db.row_factory = dict_factory
+        cursor = db.cursor()
+        cursor.execute('select * from ' + param['table_name'] + ' where username = "user1"')
+        data_retrieved = cursor.fetchall()
+        db.close()
+'''

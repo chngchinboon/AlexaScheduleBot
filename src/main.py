@@ -11,6 +11,7 @@ from flask_ask import Ask, statement, question, session, context, request, versi
 import pledgeFunc
 import picaFunc
 
+
 # Program Start
 app = Flask(__name__)
 ask = Ask(app, "/Babybot")
@@ -18,10 +19,27 @@ ask = Ask(app, "/Babybot")
 # Logging format
 logFormatter = logging.Formatter("%(asctime)s  [%(levelname)s] [%(name)s] %(message)s")
 
+def setup_logging():
+    logger = logging.getLogger()
+    for h in logger.handlers:
+        logger.removeHandler(h)
+
+    h = logging.StreamHandler(sys.stdout)
+
+    # use whatever format you want here
+    h.setFormatter(logging.Formatter(logFormatter))
+    logger.addHandler(h)
+    logger.setLevel(logging.INFO)
+
+    return logger
+
+rootLogger = setup_logging()
+
+'''
 # Setup root logger handle
+# Amazon AWS does not support logging to separate files. KIV
 rootLogger = logging.getLogger(__name__)
 rootLogger.setLevel(logging.DEBUG)
-
 
 class MyFilter(object):
     def __init__(self, level):
@@ -53,7 +71,7 @@ consoleHandler = logging.StreamHandler(sys.stdout)
 consoleHandler.setLevel(logging.DEBUG)
 consoleHandler.setFormatter(logFormatter)
 rootLogger.addHandler(consoleHandler)
-
+'''
 
 _DATE_PATTERNS = {
     # "today", "tomorrow", "november twenty-fifth": 2015-11-25
