@@ -1,7 +1,9 @@
 # import sqlite3
+# import iso8601
 import logging
 import os
 import requests
+
 rootLogger = logging.getLogger(__name__)
 pica_url = os.environ.get('pica_url')
 
@@ -34,14 +36,29 @@ def get_appointment_msg(msg_info,time_frame):
     if appointmentslist:
         numappointments = len(appointmentslist)
         appointment_msglist = []
+        # inside appointments
+        # Midday meal (service type) will arrive at date/time and be provided by Careworker Name (assigned careworker)
         if numappointments > 1:
-            appointment_msglist.append('You have {} appointments. '.format(numappointments))
+            appointment_msglist.append('You have {} in-house appointments. '.format(numappointments))
         else:
-            appointment_msglist.append('You have 1 appointment. ')
+            appointment_msglist.append('You have 1 in-house appointment. ')
 
         for idx, appointment in enumerate(appointmentslist):
             if numappointments > 1:
-                appointment_msglist.append('Appointment {}:'.format(idx + 1) + '.')
+                appointment_msglist.append('Appointment {}:'.format(idx + 1))
+            if appointment['service_type']:
+                appointment_msglist.append(appointment['service_type'] + ' will arrive at')
+            if appointment['date']:
+                appointment_msglist.append(appointment['date'][0:10] + ',') #poor implementation! to revisit once PICA figures out what they have
+            if appointment['time']:
+                if 'nn' in appointment['time']:
+                    appointment_msglist.append(appointment['time'][0:2]+' noon') #poor implementation! to revisit once PICA figures out what they have
+                else:
+                    appointment_msglist.append(appointment['time'])
+            if appointment['assigned_careworker']:
+                appointment_msglist.append('and be provided by ' + appointment['assigned_careworker'] + '.')
+
+                '''
             if appointment['purpose']:
                 appointment_msglist.append(appointment['purpose'] + '.')
             if appointment['start_date']:
@@ -50,6 +67,7 @@ def get_appointment_msg(msg_info,time_frame):
                 appointment_msglist.append('With: ' + appointment['contact_person'])
             if appointment['location']:
                 appointment_msglist.append('at: ' + appointment['location'] + '.')
+                '''
 
     else:
         appointment_msglist = 'You have no appointments.'
@@ -205,9 +223,9 @@ def get_info_from_PICA(param):
     url = '/'.join([pica_url, param['time_frame']['date_start'], param['time_frame']['date_end'], param['user_id']])
     rootLogger.debug(url)
     # Send request to PICA
-    try:
+    # try
         # r = requests.post('http://httpbin.org/post', data = {'key':'value'})
-        pica_response = requests.get(url)
+    pica_response = requests.get(url)
 
     # parse return data from PICA
     # iso8601.parse_date()
