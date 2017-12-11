@@ -24,56 +24,49 @@ def get_appointment_msg(msg_info,time_frame):
       # 'assigned_careworker': '####'}]
 
     #rootLogger.info(timeframe)
-    appointmentslist = get_info_from_PICA(param)
-    '''
-    id INTEGER PRIMARY KEY,
-    username TEXT,
-    start_date TEXT, 
-    contact_person TEXT,
-    location TEXT,
-    purpose TEXT)    
-    '''
-    if appointmentslist:
-        numappointments = len(appointmentslist)
-        appointment_msglist = []
-        # inside appointments
-        # Midday meal (service type) will arrive at date/time and be provided by Careworker Name (assigned careworker)
-        if numappointments > 1:
-            appointment_msglist.append('You have {} in-house appointments. '.format(numappointments))
-        else:
-            appointment_msglist.append('You have 1 in-house appointment. ')
+    appointmentslist, status = get_info_from_PICA(param)
 
-        for idx, appointment in enumerate(appointmentslist):
+    if status=='ok':
+        if appointmentslist:
+            numappointments = len(appointmentslist)
+            appointment_msglist = []
+            # inside appointments
+            # Midday meal (service type) will arrive at date/time and be provided by Careworker Name (assigned careworker)
             if numappointments > 1:
-                appointment_msglist.append('Appointment {}:'.format(idx + 1))
-            if appointment['service_type']:
-                appointment_msglist.append(appointment['service_type'] + ' will arrive at')
-            if appointment['date']:
-                appointment_msglist.append(appointment['date'][0:10] + ',') #poor implementation! to revisit once PICA figures out what they have
-            if appointment['time']:
-                if 'nn' in appointment['time']:
-                    appointment_msglist.append(appointment['time'][0:2]+' noon') #poor implementation! to revisit once PICA figures out what they have
-                else:
-                    appointment_msglist.append(appointment['time'])
-            if appointment['assigned_careworker']:
-                appointment_msglist.append('and be provided by ' + appointment['assigned_careworker'] + '.')
+                appointment_msglist.append('You have {} in-house appointments. '.format(numappointments))
+            else:
+                appointment_msglist.append('You have 1 in-house appointment. ')
 
-                '''
-            if appointment['purpose']:
-                appointment_msglist.append(appointment['purpose'] + '.')
-            if appointment['start_date']:
-                appointment_msglist.append('On: ' + appointment['start_date'] + '.')
-            if appointment['contact_person']:
-                appointment_msglist.append('With: ' + appointment['contact_person'])
-            if appointment['location']:
-                appointment_msglist.append('at: ' + appointment['location'] + '.')
-                '''
+            for idx, appointment in enumerate(appointmentslist):
+                if numappointments > 1:
+                    appointment_msglist.append('Appointment {}:'.format(idx + 1))
+                if appointment['service_type']:
+                    appointment_msglist.append(appointment['service_type'] + ' will arrive at')
+                if appointment['date']:
+                    appointment_msglist.append(appointment['date'][0:10] + ',') #poor implementation! to revisit once PICA figures out what they have
+                if appointment['time']:
+                    if 'nn' in appointment['time']:
+                        appointment_msglist.append(appointment['time'][0:2]+' noon') #poor implementation! to revisit once PICA figures out what they have
+                    else:
+                        appointment_msglist.append(appointment['time'])
+                if appointment['assigned_careworker']:
+                    appointment_msglist.append('and be provided by ' + appointment['assigned_careworker'] + '.')
 
+        else:
+            appointment_msglist = 'You have no appointments.'
+
+        appointment_msg = ' '.join(appointment_msglist)
+
+    elif status == 'Connection Error':
+        appointment_msg = 'PICA Appointment API is down'
+    elif status == 'Connection Timeout':
+        appointment_msg = "PICA Appointment API Timed out. " \
+                     "You have 1 appointment.  Dental Checkup. On: Sat, 13 Jan 2018, 2:10 PM. With: Dr Chin at: TTSH. "
     else:
-        appointment_msglist = 'You have no appointments.'
+        appointment_msg = 'Error in Appointment function'
 
     # appointment_msg='Your current schedules are {}'.format(appointment_msgstr)
-    appointment_msg = ' '.join(appointment_msglist)
+    rootLogger.info("Get Appointment complete")
     rootLogger.debug(appointment_msg)
     return appointment_msg
 
@@ -94,41 +87,41 @@ def get_medication_msg(msg_info,time_frame):
                     'user_id': msg_info["Device ID"]
                 }
 
-    medicationlist = get_info_from_PICA(param)
-    '''
-    id INTEGER PRIMARY KEY, 
-    username TEXT,
-    mediname TEXT, 
-    dosage TEXT,
-    frequency TEXT,
-    comments TEXT)
-    '''
-
-    if medicationlist:
-        nummedication = len(medicationlist)
-        medication_msglist = []
-        if nummedication > 1:
-            medication_msglist.append('You have {} medications to take. '.format(nummedication))
-        else:
-            medication_msglist.append('You have 1 medication. ')
-
-        for idx, medication in enumerate(medicationlist):
+    medicationlist, status = get_info_from_PICA(param)
+    if status == 'ok':
+        if medicationlist:
+            nummedication = len(medicationlist)
+            medication_msglist = []
             if nummedication > 1:
-                medication_msglist.append('Medication {}:'.format(idx + 1) + '.')
-            if medication['dosage']:
-                medication_msglist.append(medication['dosage'])
-            if medication['mediname']:
-                medication_msglist.append(medication['mediname'])
-            if medication['frequency']:
-                medication_msglist.append(medication['frequency'] + '.')
-            if medication['comments']:
-                medication_msglist.append(medication['comments'] + '.')
+                medication_msglist.append('You have {} medications to take. '.format(nummedication))
+            else:
+                medication_msglist.append('You have 1 medication. ')
 
+            for idx, medication in enumerate(medicationlist):
+                if nummedication > 1:
+                    medication_msglist.append('Medication {}:'.format(idx + 1) + '.')
+                if medication['dosage']:
+                    medication_msglist.append(medication['dosage'])
+                if medication['mediname']:
+                    medication_msglist.append(medication['mediname'])
+                if medication['frequency']:
+                    medication_msglist.append(medication['frequency'] + '.')
+                if medication['comments']:
+                    medication_msglist.append(medication['comments'] + '.')
+
+        else:
+            medication_msglist = 'You have no medicatiton to take.'
+
+        medication_msg = ' '.join(medication_msglist)
+
+    elif status == 'Connection Error':
+        medication_msg = 'PICA medication API is down'
+    elif status == 'Connection Timeout':
+        medication_msg = "PICA Appointment API Timed out. " \
+                          "You have 2 medications to take.  Medication 1:. 1 tablet Panadol after meal. do not eat before meal. Medication 2:. 2 tablets Lasix at 03:10 PM."
     else:
-        medication_msglist = 'You have no medicatiton to take.'
+        medication_msg = 'Error in Medication function'
 
-    # appointment_msg='Your current schedules are {}'.format(appointment_msgstr)
-    medication_msg = ' '.join(medication_msglist)
     rootLogger.info("Get medication complete")
     rootLogger.debug(medication_msg)
     return medication_msg
@@ -150,31 +143,35 @@ def get_food_msg(msg_info,time_frame):
                     'user_id': msg_info["Device ID"]
                 }
 
-    foodlist = get_info_from_PICA(param)
-    '''
-    id INTEGER PRIMARY KEY, 
-    username TEXT,
-    foodtype TEXT, 
-    frequency TEXT)
-    '''
-    if foodlist:
-        food_msglist = []
+    foodlist, status = get_info_from_PICA(param)
+    if status == 'ok':
+        if foodlist:
+            food_msglist = []
 
-        food_msglist.append('Please eat')
+            food_msglist.append('Please eat')
 
-        food_msglist2 = []
-        for idx, food in enumerate(foodlist):
-            if food['foodtype']:
-                food_msglist2.append(food['foodtype'])
-            if food['frequency']:
-                food_msglist2.append(food['frequency'])
+            food_msglist2 = []
+            for idx, food in enumerate(foodlist):
+                if food['foodtype']:
+                    food_msglist2.append(food['foodtype'])
+                if food['frequency']:
+                    food_msglist2.append(food['frequency'])
 
-        food_msglist.append(' '.join(food_msglist2))
+            food_msglist.append(' '.join(food_msglist2))
+        else:
+            food_msglist = 'Eat whatever you like.'
+
+        # appointment_msg='Your current schedules are {}'.format(appointment_msgstr)
+        food_msg = ' '.join(food_msglist)
+
+    elif status == 'Connection Error':
+        food_msg = 'PICA food API is down'
+    elif status == 'Connection Timeout':
+        food_msg = "PICA Appointment API Timed out. " \
+                   "Please eat Breakfast everyday"
     else:
-        food_msglist = 'Eat whatever you like.'
+        food_msg = 'Error in food function'
 
-    # appointment_msg='Your current schedules are {}'.format(appointment_msgstr)
-    food_msg = ' '.join(food_msglist)
     rootLogger.info('Get food complete')
     rootLogger.debug(food_msg)
     return food_msg
@@ -195,7 +192,7 @@ def get_help_msg(msg_info):
         help_msg = ' '.join([help_msg,source_msg,'for help'])
         rootLogger.info('Get help complete')
     else:
-        help_msg = 'Send help failed'
+        help_msg = 'Send help API is down'
         #do follow up action like send sms instead.
         rootLogger.info('Get help failed')
 
@@ -203,15 +200,6 @@ def get_help_msg(msg_info):
     return help_msg
 
 def get_info_from_PICA(param):
-    """
-    exampledate=time.localtime()
-    exampledatestr=time.strftime('%a, %d %b %Y %H:%M:%S',exampledate)
-    examplecomment='Dental checkup at TTSH'
-    schedulelist=[{'Datetime':exampledatestr,'comments':examplecomment}]
-    param={'time_frame':{'date_start': "2017-11-01",'date_end': "2017-11-31"},
-           'user_id': []
-           }
-    """
 
     # retrieve data from PICA
 
@@ -223,9 +211,28 @@ def get_info_from_PICA(param):
     url = '/'.join([pica_url, param['time_frame']['date_start'], param['time_frame']['date_end'], param['user_id']])
     rootLogger.debug(url)
     # Send request to PICA
-    # try
+    # try:
         # r = requests.post('http://httpbin.org/post', data = {'key':'value'})
-    pica_response = requests.get(url)
+
+    try:
+        pica_response = requests.get(url, timeout=2)
+        pica_response.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        rootLogger.debug(e)
+    except requests.exceptions.ConnectionError as e:
+        rootLogger.debug("Error Connecting:")
+        status = 'Connection Error'
+        data_retrieved = ''
+    except requests.exceptions.Timeout as e:
+        rootLogger.debug("Timeout Error:")
+        status = 'Connection Timeout'
+        data_retrieved = ''
+    except requests.exceptions.RequestException as e:
+        # catastrophic error. bail.
+        rootLogger.debug(e)
+    else:
+        data_retrieved = pica_response.json()
+        status = 'ok'
 
     # parse return data from PICA
     # iso8601.parse_date()
@@ -234,9 +241,9 @@ def get_info_from_PICA(param):
     # assigned healthcare worker
     # comments (this is optional e.g. assigned careworker will be running late)
     # data_recieved = r.json()
-    data_retrieved = pica_response.json()
 
-    return data_retrieved
+
+    return data_retrieved, status
 
 def push_info_to_PICA(param):
     # Send request to PICA
@@ -250,25 +257,6 @@ def push_info_to_PICA(param):
     # data_recieved = r.json()
 
     #data_recieved = data_to_send
-    status=True
+    status=False
     return status
 
-
-def dict_factory(cursor, row):
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
-
-
-''' 
-#Old DB testing
-   if param['db_name'] == 'devdb':
-        # get from database #to be removed
-        db = sqlite3.connect('../data/testdb')
-        db.row_factory = dict_factory
-        cursor = db.cursor()
-        cursor.execute('select * from ' + param['table_name'] + ' where username = "user1"')
-        data_retrieved = cursor.fetchall()
-        db.close()
-'''

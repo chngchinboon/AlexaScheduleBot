@@ -38,17 +38,27 @@ response_template = {
 
 def get_pledge_msg(msg_info):
     rootLogger.info('pledge message')
-    sb_info = get_info_from_SB(msg_info)
-    rootLogger.info('Get pledge complete')
-    # format response
-    pledge_info = {'username': sb_info['data'][0]['username'],
-                   'message': sb_info['data'][0]['message']}
-    randomized_message_structure = " ".join([
-        random.choice(response_template['message_intro']),
-        random.choice(response_template['message_leadin']),
-        random.choice(response_template['message_leadout'])])
-    pledge_msg = randomized_message_structure.format(**pledge_info)
-    rootLogger.debug(pledge_msg)
+    sb_info, status = get_info_from_SB(msg_info)
+    rootLogger.info('Get pledge from sb exit')
+    rootLogger.info(status)
+    if status=='ok':
+        # format response
+        pledge_info = {'username': sb_info['data'][0]['username'],
+                       'message': sb_info['data'][0]['message']}
+        randomized_message_structure = " ".join([
+            random.choice(response_template['message_intro']),
+            random.choice(response_template['message_leadin']),
+            random.choice(response_template['message_leadout'])])
+        pledge_msg = randomized_message_structure.format(**pledge_info)
+        rootLogger.debug(pledge_msg)
+    elif status == 'Connection Error':
+        pledge_msg = 'Pledge API is down'
+    elif status == 'Connection Timeout':
+        pledge_msg = "Pledge API Timed out." \
+        "I’m so glad you asked. Do you know that you have received well wishes from the community through the Silver Bow pledge campaign? " \
+        "Today, James would like to send you a message to thank you for contributing to build Singapore into what it is today."
+    else:
+        pledge_msg = 'Error in pledge function'
     return pledge_msg
 
 
@@ -60,16 +70,27 @@ def get_info_from_SB(param):
     rootLogger.debug('Getting info from SB')
     # Send request to SB
     # r = requests.post('http://httpbin.org/post', data = {'key':'value'})
-    sb_response = requests.get(sb_url)
 
     # Non-200 status code handling
     try:
+        sb_response = requests.get(sb_url, timeout=2)
         sb_response.raise_for_status()
     except requests.exceptions.HTTPError as e:
-        return rootLogger.debug(e)
+        rootLogger.debug(e)
+    except requests.exceptions.ConnectionError as e:
+        rootLogger.debug("Error Connecting:")
+        status = 'Connection Error'
+        data_retrieved = ''
+    except requests.exceptions.Timeout as e:
+        rootLogger.debug("Timeout Error:")
+        status = 'Connection Timeout'
+        data_retrieved = ''
     except requests.exceptions.RequestException as e:
         # catastrophic error. bail.
-        return rootLogger.debug(e)
+        rootLogger.debug(e)
+    else:
+        data_retrieved = sb_response.json()
+        status ='ok'
 
     # parse return data from PICA
     # iso8601.parse_date()
@@ -78,13 +99,7 @@ def get_info_from_SB(param):
     # assigned healthcare worker
     # comments (this is optional e.g. assigned careworker will be running late)
     # data_recieved = r.json()
-    data_retrieved = sb_response.json()
+    #data_retrieved = sb_response.json()
 
-    return data_retrieved
+    return data_retrieved, status
 
-
-def dict_factory(cursor, row):
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d

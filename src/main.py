@@ -1,21 +1,18 @@
-# import sqlite3
-# import iso8601
-# import pytz
 from datetime import datetime, timedelta
 import re
 import logging
-import sys
 
 from flask import Flask
 from flask_ask import Ask, statement, question, session, context, request, version
-import pledgeFunc
-import picaFunc
+import src.pledgeFunc as pledgeFunc
+import src.picaFunc as picaFunc
 
 
 # Program Start
 app = Flask(__name__)
-ask = Ask(app, "/Babybot")
-
+#ask = Ask(app, "/Babybot") # only for ngrok
+ask = Ask(app, "/")
+'''
 # Logging format
 logFormatter = logging.Formatter("%(asctime)s  [%(levelname)s] [%(name)s] %(message)s")
 
@@ -34,48 +31,13 @@ def setup_logging():
     return logger
 
 rootLogger = setup_logging()
-
 '''
-# Setup root logger handle
-# Amazon AWS does not support logging to separate files. KIV
-rootLogger = logging.getLogger(__name__)
-rootLogger.setLevel(logging.DEBUG)
+rootLogger = logging.getLogger()
 
-class MyFilter(object):
-    def __init__(self, level):
-        self.__level = level
-
-    def filter(self, logRecord):
-        return logRecord.levelno <= self.__level
-
-
-def setup_logger(rootLogger, filename, formatter, level=logging.INFO,strict=True):
-    """Function setup as many loggers as you want"""
-    handler = logging.FileHandler(filename)
-    handler.setFormatter(formatter)
-    handler.setLevel(level)
-    if strict:
-        handler.addFilter(MyFilter(level))
-    rootLogger.addHandler(handler)
-
-    return handler
-
-
-debugHandler = setup_logger(rootLogger, '../data/debug.log', logFormatter, level=logging.DEBUG, strict=False)
-infoHandler = setup_logger(rootLogger, '../data/info.log', logFormatter, level=logging.INFO)
-errorHandler = setup_logger(rootLogger, '../data/error.log', logFormatter, level=logging.ERROR)
-usageHandler = setup_logger(rootLogger, '../data/usage.log', logFormatter, level=logging.CRITICAL)
-
-# Output to console for easy debugging. To remove when i get used to proper error logging/debugging
-consoleHandler = logging.StreamHandler(sys.stdout)
-consoleHandler.setLevel(logging.DEBUG)
-consoleHandler.setFormatter(logFormatter)
-rootLogger.addHandler(consoleHandler)
-'''
 
 _DATE_PATTERNS = {
     # "today", "tomorrow", "november twenty-fifth": 2015-11-25
-    '^\d{4}-\d{2}-\d{2}$': ['%Y-%m-%d', 1],
+    '^\d{4}-\d{2}-\d{2}$': ['%Y-%m-%d', 0],
     # "this week", "next week": 2015-W48
     '^\d{4}-W\d{2}$': ['%Y-W%U-%w', 7],
     # "this weekend": 2015-W48-WE
@@ -132,41 +94,49 @@ def homepage():
 @ask.launch
 def start_skill():
     welcome_message = 'Hello there! Welcome to Baby Bot developed by NUS ISS!'
-    return question(welcome_message)
+    return statement(welcome_message)
 
 
-@ask.intent('GetAppointments', default={'TimeFrame': 'today'})  #, convert={'TimeFrame': 'date'})
+@ask.intent('GetAppointments')  #, convert={'TimeFrame': 'date'})
 def get_appointment(TimeFrame):
     rootLogger.info('Request for appointment received')
     msg_info = get_msg_info()
+    if not TimeFrame:
+        TimeFrame= datetime.now().strftime('%Y-%m-%d')
     response_msg = picaFunc.get_appointment_msg(msg_info, parse_time_frame(TimeFrame))
     rootLogger.debug(response_msg)
     rootLogger.info('Retrieved appointments msg')
-    return statement(response_msg)
+    return statement(response_msg).simple_card(title='Get Appointment', content = response_msg)
 
 
 @ask.intent('GetMedication')
 def get_medication(TimeFrame):
     rootLogger.info('Request for medication received')
     msg_info = get_msg_info()
+    if not TimeFrame:
+        TimeFrame= datetime.now().strftime('%Y-%m-%d')
     response_msg = picaFunc.get_medication_msg(msg_info, parse_time_frame(TimeFrame))
     rootLogger.debug(response_msg)
     rootLogger.info('Retrieved medications msg')
-    return statement(response_msg)
+    return statement(response_msg).simple_card(title='Get Medication', content = response_msg)
 
 
 @ask.intent('GetFood')
 def get_food(TimeFrame):
     rootLogger.info('Request for food received')
     msg_info = get_msg_info()
+    if not TimeFrame:
+        TimeFrame= datetime.now().strftime('%Y-%m-%d')
     response_msg = picaFunc.get_food_msg(msg_info, parse_time_frame(TimeFrame))
     rootLogger.debug(response_msg)
     rootLogger.info('Retrieved food msg')
-    return statement(response_msg)
+    return statement(response_msg).simple_card(title='Get Food', content = response_msg)
 
 
 @ask.intent('GetAll')
 def get_all(TimeFrame):
+    if not TimeFrame:
+        TimeFrame= datetime.now().strftime('%Y-%m-%d')
     time_frame = parse_time_frame(TimeFrame)
     rootLogger.info('Request for all info received')
     msg_info = get_msg_info()
@@ -174,10 +144,11 @@ def get_all(TimeFrame):
     all_msglist.append(picaFunc.get_appointment_msg(msg_info, time_frame))
     all_msglist.append(picaFunc.get_medication_msg(msg_info, time_frame))
     all_msglist.append(picaFunc.get_food_msg(msg_info, time_frame))
+
     all_msg = ' '.join(all_msglist)
     rootLogger.debug(all_msg)
     rootLogger.info('Retrieved all info msg')
-    return statement(all_msg)
+    return statement(all_msg).simple_card(title='Get All', content = all_msg)
 
 
 @ask.intent('GetHelp')
@@ -187,7 +158,7 @@ def get_help():
     response_msg = picaFunc.get_help_msg(msg_info)
     rootLogger.debug(response_msg)
     rootLogger.info('Retrieved help msg')
-    return statement(response_msg)
+    return statement(response_msg).simple_card(title='Get Help', content = response_msg)
 
 
 @ask.intent('GetPledge')
@@ -197,7 +168,7 @@ def get_pledge():
     response_msg = pledgeFunc.get_pledge_msg(msg_info)
     rootLogger.debug(response_msg)
     rootLogger.info('Retrieved pledge msg')
-    return statement(response_msg)
+    return statement(response_msg).simple_card(title='Get Pledge', content = response_msg)
 
 
 @ask.intent('AMAZON.StopIntent')
@@ -209,3 +180,5 @@ def stop_intent():
 if __name__ == '__main__':
     rootLogger.info('Started Up')
     app.run(debug=True)  # need to change to False when pushing to production
+
+
