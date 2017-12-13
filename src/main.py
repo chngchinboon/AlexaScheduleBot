@@ -93,9 +93,13 @@ def homepage():
 
 @ask.launch
 def start_skill():
-    welcome_message = 'Hello there! Welcome to Baby Bot developed by NUS ISS!'
-    return statement(welcome_message)
+    welcome_message = 'Hello there! How can I help you'
+    return question(welcome_message).reprompt('How can I help you today?')
 
+@ask.intent('GetInfo')
+def get_info():
+    info_message = 'I am Baby Bot. I am developed by N.U.S. I.S.S.!'
+    return statement(info_message)
 
 @ask.intent('GetAppointments')  #, convert={'TimeFrame': 'date'})
 def get_appointment(TimeFrame):

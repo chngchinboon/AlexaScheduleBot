@@ -40,6 +40,10 @@
     {
         "intent": "GetPledge"
     },
+
+    {
+        "intent": "GetInfo"
+    },
         {
         "intent": "AMAZON.StopIntent"        
     },     
@@ -64,11 +68,12 @@
     
     
 // Sample Utterances
-
+GetAppointments got any appointments {TimeFrame}
 GetAppointments what appointments do i have {TimeFrame}
 GetAppointments who do i need to meet {TimeFrame}
 GetAppointments meet who {TimeFrame}
 
+GetMedication any medicine i need to take {TimeFrame}
 GetMedication what medicine do i need to eat {TimeFrame}
 GetMedication what medication do i need to eat {TimeFrame}
 GetMedication what medicine {TimeFrame}
@@ -95,4 +100,9 @@ GetPledge what's new today
 GetPledge how are you today
 GetPledge would you talk to me please
 GetPledge talk to me
+GetPledge any messages for me
+
+GetInfo who are you
+GetInfo what are you
+GetInfo what is baby bot
 
