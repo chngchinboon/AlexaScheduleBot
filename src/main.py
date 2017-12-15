@@ -1,17 +1,21 @@
 from datetime import datetime, timedelta
 import re
 import logging
+import os
 
 from flask import Flask
 from flask_ask import Ask, statement, question, session, context, request, version
+
 import src.pledgeFunc as pledgeFunc
 import src.picaFunc as picaFunc
 
+import boto3
 
 # Program Start
 app = Flask(__name__)
 #ask = Ask(app, "/Babybot") # only for ngrok
 ask = Ask(app, "/")
+
 '''
 # Logging format
 logFormatter = logging.Formatter("%(asctime)s  [%(levelname)s] [%(name)s] %(message)s")
@@ -66,7 +70,8 @@ def parse_time_frame(time_frame):
                 time_frame += '-0'
             date_start = datetime.strptime(time_frame, format_pattern[0]).date()
             date_end = date_start + timedelta(format_pattern[1])
-            date_range = {'date_start': date_start.isoformat(), 'date_end': date_end.isoformat()}
+            date_range = {'date_start': date_start.isoformat(), 'date_end': date_end.isoformat()} # convert to format for PICA
+            # date_range = {'date_start': date_start.strftime("%Y/%m/%d"), 'date_end': date_end.strftime("%Y/%m/%d")}
             return date_range
     return None
 
@@ -98,7 +103,7 @@ def start_skill():
 
 @ask.intent('GetInfo')
 def get_info():
-    info_message = 'I am Baby Bot. I am developed by N.U.S. I.S.S.!'
+    info_message = 'I am Baby Bot. I am developed by the Institute of Systems Science, National University of Singapore'
     return statement(info_message)
 
 @ask.intent('GetAppointments')  #, convert={'TimeFrame': 'date'})
@@ -172,6 +177,7 @@ def get_pledge():
     response_msg = pledgeFunc.get_pledge_msg(msg_info)
     rootLogger.debug(response_msg)
     rootLogger.info('Retrieved pledge msg')
+    usage_log(msg_info["Device ID"], 'pledge', msg_info["Request Timestamp"].strftime("%Y/%m/%d"), datetime.now().strftime("%Y/%m/%d"), 'success')
     return statement(response_msg).simple_card(title='Get Pledge', content = response_msg)
 
 
@@ -179,6 +185,23 @@ def get_pledge():
 def stop_intent():
     bye_text = 'Ok... bye'
     return statement(bye_text)
+
+def db_connect():
+    return boto3.client('dynamodb', aws_access_key_id = os.environ.get('DB_ACCESS_KEY_ID'),
+                            aws_secret_access_key = os.environ.get('DB_SECRET'))
+
+def usage_log(userID, usageType, requestTimestamp, responseTimestamp, responseStatus):
+    rootlogger.debug('Connecting to DB')
+    dynamo = db_connect()
+    item = {
+        'userID': {'S':userID},
+        'usageType': {'S': usageType},
+        'requestTimestamp': {'S': requestTimestamp},
+        'responseTimestamp': {'S': responseTimestamp},
+        'responseStatus': {'S': responseStatus}
+    }
+    dynamo.put_item(TableName = 'usage',Item = item)
+    return rootLogger.debug('Logged usage')
 
 
 if __name__ == '__main__':

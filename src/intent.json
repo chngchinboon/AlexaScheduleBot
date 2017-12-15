@@ -72,17 +72,33 @@ GetAppointments got any appointments {TimeFrame}
 GetAppointments what appointments do i have {TimeFrame}
 GetAppointments who do i need to meet {TimeFrame}
 GetAppointments meet who {TimeFrame}
+GetAppointments when is my {TimeFrame} appointment
+GetAppointments when is my appointment {TimeFrame}
+GetAppointments my appointment {TimeFrame}
+GetAppointments what's my appointment {TimeFrame}
+GetAppointments what is my appointment {TimeFrame}
+GetAppointments where i have to go {TimeFrame}
+GetAppointments go where {TimeFrame}
+GetAppointments who is coming {TimeFrame}
+GetAppointments when coming {TimeFrame}
 
 GetMedication any medicine i need to take {TimeFrame}
 GetMedication what medicine do i need to eat {TimeFrame}
 GetMedication what medication do i need to eat {TimeFrame}
 GetMedication what medicine {TimeFrame}
 GetMedication medicine eat what {TimeFrame}
+GetMedication eat what medicine {TimeFrame}
 GetMedication what medication {TimeFrame}
+GetMedication what's my medication for {TimeFrame}
+GetMedication what is my medication for {TimeFrame}
+GetMedication when is my {TimeFrame} medication
+GetMedication when medication {TimeFrame}
 
 GetFood what do i need to eat {TimeFrame}
 GetFood what should i eat {TimeFrame}
 GetFood eat what {TimeFrame}
+GetFood I'm hungry {TimeFrame}
+GetFood I am hungry {TimeFrame}
 
 GetAll list all my reminders {TimeFrame}
 GetAll tell me everything {TimeFrame}
@@ -90,13 +106,16 @@ GetAll to refresh me {TimeFrame}
 GetAll remind me of everything {TimeFrame}
 GetAll to remind me all {TimeFrame}
 
+GetHelp help me
 GetHelp help me please
 GetHelp please help
 GetHelp please send help
 GetHelp I've fallen please send help
+GetHelp I have fallen please send help
 
 GetPledge pledge me
 GetPledge what's new today
+GetPledge what is new today
 GetPledge how are you today
 GetPledge would you talk to me please
 GetPledge talk to me

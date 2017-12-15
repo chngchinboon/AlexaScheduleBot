@@ -36,9 +36,9 @@ def get_appointment_msg(msg_info,time_frame):
             # inside appointments
             # Midday meal (service type) will arrive at date/time and be provided by Careworker Name (assigned careworker)
             if numappointments > 1:
-                appointment_msglist.append('You have {} in-house appointments. '.format(numappointments))
+                appointment_msglist.append('You have {} appointments. '.format(numappointments))
             else:
-                appointment_msglist.append('You have 1 in-house appointment. ')
+                appointment_msglist.append('You have 1 appointment. ')
 
             for idx, appointment in enumerate(appointmentslist):
                 if numappointments > 1:
