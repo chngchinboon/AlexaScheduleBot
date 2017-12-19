@@ -28,7 +28,7 @@ def get_appointment_msg(msg_info,time_frame):
     #rootLogger.info(timeframe)
     appointmentslist, status = get_info_from_PICA(param)
 
-    if status=='ok':
+    if status=='success':
         if appointmentslist:
             appointmentslist = [x for x in appointmentslist if x is not None]  # handling weird occasional null output from pica
             numappointments = len(appointmentslist)
@@ -80,12 +80,12 @@ def get_appointment_msg(msg_info,time_frame):
 
 
     elif status == 'Connection Error':
-        appointment_msg = "You have 1 appointment.  Dental Checkup. On: Sat, 13 Jan 2018, 2:10 PM. With: Dr Chin at: TTSH. "
-        # appointment_msg = "Sorry we are experiencing technical difficulties retrieving data. Please check back later."
+        #appointment_msg = "You have 1 appointment.  Dental Checkup. On: Sat, 13 Jan 2018, 2:10 PM. With: Dr Chin at: TTSH. "
+        appointment_msg = "Sorry we are experiencing technical difficulties retrieving data. Please check back later."
         rootLogger.error('PICA connection Error')
     elif status == 'Connection Timeout':
-        appointment_msg = "You have 1 appointment.  Dental Checkup. On: Sat, 13 Jan 2018, 2:10 PM. With: Dr Chin at: TTSH. "
-        # appointment_msg = "Sorry we are experiencing technical difficulties retrieving data. Please check back later."
+        #appointment_msg = "You have 1 appointment.  Dental Checkup. On: Sat, 13 Jan 2018, 2:10 PM. With: Dr Chin at: TTSH. "
+        appointment_msg = "Sorry we are experiencing technical difficulties retrieving data. Please check back later."
         rootLogger.error('PICA connection Timeout')
     else:
         appointment_msg = 'Error in Appointment function'
@@ -93,7 +93,7 @@ def get_appointment_msg(msg_info,time_frame):
     # appointment_msg='Your current schedules are {}'.format(appointment_msgstr)
     rootLogger.info("Get Appointment complete")
     rootLogger.debug(appointment_msg)
-    return appointment_msg
+    return appointment_msg, status
 
 
 def get_medication_msg(msg_info,time_frame):
@@ -113,7 +113,7 @@ def get_medication_msg(msg_info,time_frame):
             }
 
     medicationlist, status = get_info_from_PICA(param)
-    if status == 'ok':
+    if status == 'success':
         if medicationlist:
             medicationlist = [x for x in medicationlist if x is not None] #handling weird occasional null output from pica
             nummedication = len(medicationlist)
@@ -144,12 +144,12 @@ def get_medication_msg(msg_info,time_frame):
 
 
     elif status == 'Connection Error':
-        medication_msg = "You have 2 medications to take.  Medication 1:. 1 tablet Panadol after meal. do not eat before meal. Medication 2:. 2 tablets Lasix at 03:10 PM."
-        # medication_msg = "Sorry we are experiencing technical difficulties retrieving data. Please check back later."
+        #medication_msg = "You have 2 medications to take.  Medication 1:. 1 tablet Panadol after meal. do not eat before meal. Medication 2:. 2 tablets Lasix at 03:10 PM."
+        medication_msg = "Sorry we are experiencing technical difficulties retrieving data. Please check back later."
         rootLogger.error('PICA connection Error')
     elif status == 'Connection Timeout':
-        medication_msg = "You have 2 medications to take.  Medication 1:. 1 tablet Panadol after meal. do not eat before meal. Medication 2:. 2 tablets Lasix at 03:10 PM."
-        # medication_msg = "Sorry we are experiencing technical difficulties retrieving data. Please check back later."
+        #medication_msg = "You have 2 medications to take.  Medication 1:. 1 tablet Panadol after meal. do not eat before meal. Medication 2:. 2 tablets Lasix at 03:10 PM."
+        medication_msg = "Sorry we are experiencing technical difficulties retrieving data. Please check back later."
         rootLogger.error('PICA connection Timeout')
     else:
         medication_msg = 'Error in Medication function'
@@ -157,7 +157,7 @@ def get_medication_msg(msg_info,time_frame):
     #medication_msg = "You have 2 medications to take.  Medication 1:. 1 tablet Panadol after meal. do not eat before meal. Medication 2:. 2 tablets Lasix at 03:10 PM."
     rootLogger.info("Get medication complete")
     rootLogger.debug(medication_msg)
-    return medication_msg
+    return medication_msg, status
 
 
 def get_food_msg(msg_info,time_frame):
@@ -169,12 +169,12 @@ def get_food_msg(msg_info,time_frame):
                     'time_frame': time_frame,
                     'user_id': 'user1'
                 }
+    '''
 
-    else:
-        param = {   'db_name': 'PICA',
-                    'time_frame': time_frame,
-                    'user_id': msg_info["Device ID"]
-                }
+    param = {   'db_name': 'food',
+                'time_frame': time_frame,
+                'user_id': msg_info["Device ID"]
+            }
 
     foodlist, status = get_info_from_PICA(param)
     if status == 'ok':
@@ -204,8 +204,8 @@ def get_food_msg(msg_info,time_frame):
                    "Please eat Breakfast everyday"
     else:
         food_msg = 'Error in food function'
-    '''
-    food_msg = "If you are not very hungry, you can have hot milo or porridge"
+
+    #food_msg = "If you are not very hungry, you can have hot milo or porridge"
     rootLogger.info('Get food complete')
     rootLogger.debug(food_msg)
     return food_msg
@@ -213,26 +213,25 @@ def get_food_msg(msg_info,time_frame):
 def get_help_msg(msg_info):
     rootLogger.info('Getting help')
 
-    help_msg = 'Contacted'
+    #contact requested resource.
 
-    if not msg_info["Device ID"]:
-        source_msg = 'Amazon test service'
-        status = True
-    else:
-        source_msg = 'PICA'
-        status = push_info_to_PICA(msg_info["Request Timestamp"])
+    source_msg = 'PICA'
+
+    status = push_info_to_PICA(source_msg, msg_info["Request Timestamp"])
 
     if status:
-        help_msg = ' '.join([help_msg,source_msg,'for help'])
+        help_msg = ' '.join(['Contacted', source_msg, 'for help'])
         rootLogger.info('Get help complete')
+        status = 'success'
     else:
-        # help_msg = 'Send help API is down'
-        help_msg = 'Okay, Help is on its way'
+        help_msg = 'Send help API is down'
+        status = 'Connection Timeout'
+        #help_msg = 'Okay, Help is on its way'
         #do follow up action like send sms instead.
         rootLogger.info('Get help failed')
 
     rootLogger.debug(help_msg)
-    return help_msg
+    return help_msg, status
 
 def get_info_from_PICA(param):
 
@@ -272,7 +271,7 @@ def get_info_from_PICA(param):
         rootLogger.debug(e)
     else:
         data_retrieved = pica_response.json()
-        status = 'ok'
+        status = 'success'
 
     # parse return data from PICA
     # iso8601.parse_date()
@@ -285,7 +284,7 @@ def get_info_from_PICA(param):
 
     return data_retrieved, status
 
-def push_info_to_PICA(param):
+def push_info_to_PICA(source, param):
     # Send request to PICA
     # r = requests.post('http://httpbin.org/post', data = {'key':'value'})
     # r = RQ.post(url, json = data_to_send)
@@ -297,6 +296,6 @@ def push_info_to_PICA(param):
     # data_recieved = r.json()
 
     #data_recieved = data_to_send
-    status=False
+    status = False
     return status
 

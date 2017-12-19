@@ -41,7 +41,7 @@ def get_pledge_msg(msg_info):
     sb_info, status = get_info_from_SB(msg_info)
     rootLogger.info('Get pledge from sb exit')
     rootLogger.info(status)
-    if status=='ok':
+    if status=='success':
         # format response
         pledge_info = {'username': sb_info['data'][0]['username'],
                        'message': sb_info['data'][0]['message']}
@@ -55,11 +55,11 @@ def get_pledge_msg(msg_info):
         pledge_msg = 'Pledge API is down'
     elif status == 'Connection Timeout':
         pledge_msg = "Pledge API Timed out." \
-        "I’m so glad you asked. Do you know that you have received well wishes from the community through the Silver Bow pledge campaign? " \
-        "Today, James would like to send you a message to thank you for contributing to build Singapore into what it is today."
+        #"I’m so glad you asked. Do you know that you have received well wishes from the community through the Silver Bow pledge campaign? " \
+        #"Today, James would like to send you a message to thank you for contributing to build Singapore into what it is today."
     else:
         pledge_msg = 'Error in pledge function'
-    return pledge_msg
+    return pledge_msg, status
 
 
 def get_info_from_SB(param):
@@ -90,7 +90,7 @@ def get_info_from_SB(param):
         rootLogger.debug(e)
     else:
         data_retrieved = sb_response.json()
-        status ='ok'
+        status ='success'
 
     # parse return data from PICA
     # iso8601.parse_date()

@@ -4,17 +4,38 @@ import logging
 import os
 
 from flask import Flask
+from flask_dynamo import Dynamo
 from flask_ask import Ask, statement, question, session, context, request, version
 
 import src.pledgeFunc as pledgeFunc
 import src.picaFunc as picaFunc
 
-import boto3
+#import boto3
 
 # Program Start
 app = Flask(__name__)
 #ask = Ask(app, "/Babybot") # only for ngrok
 ask = Ask(app, "/")
+
+app.config['DYNAMO_TABLES'] = [
+    {
+         'TableName': 'alexausage',
+         'KeySchema': [{'AttributeName':'userID', 'KeyType':'HASH'}],
+         'AttributeDefinitions': [{'AttributeName':'userID', 'AttributeType':'S'
+                                   },
+                                  {'AttributeName':'usageType', 'AttributeType':'S'
+                                   },
+                                  {'AttributeName': 'requestTimestamp', 'AttributeType': 'S'
+                                   },
+                                  {'AttributeName': 'responseTimestamp', 'AttributeType': 'S'
+                                   },
+                                  {'AttributeName': 'responseStatus', 'AttributeType': 'S'
+                                   }
+                                  ],
+         'ProvisionedThroughput': {'ReadCapacityUnits': 5, 'WriteCapacityUnits':5}
+    }
+]
+dynamo = Dynamo(app)
 
 '''
 # Logging format
@@ -86,6 +107,9 @@ def get_msg_info():
     # msg_info["User ID"] = session.user.userId
     # msg_info["Alexa Version"] = version
     msg_info["Device ID"] = context.System.device.deviceId
+    if not msg_info["Device ID"]:
+        msg_info["Device ID"] = 'Service Simulator'
+
     rootLogger.info('Msg_info retrieved')
     rootLogger.debug(msg_info)
     return msg_info
@@ -112,9 +136,11 @@ def get_appointment(TimeFrame):
     msg_info = get_msg_info()
     if not TimeFrame:
         TimeFrame= datetime.now().strftime('%Y-%m-%d')
-    response_msg = picaFunc.get_appointment_msg(msg_info, parse_time_frame(TimeFrame))
+    response_msg, status = picaFunc.get_appointment_msg(msg_info, parse_time_frame(TimeFrame))
     rootLogger.debug(response_msg)
     rootLogger.info('Retrieved appointments msg')
+    usage_log(msg_info["Device ID"], 'Appointment', msg_info["Request Timestamp"].isoformat(),
+              datetime.now().isoformat(), status)
     return statement(response_msg).simple_card(title='Get Appointment', content = response_msg)
 
 
@@ -124,9 +150,11 @@ def get_medication(TimeFrame):
     msg_info = get_msg_info()
     if not TimeFrame:
         TimeFrame= datetime.now().strftime('%Y-%m-%d')
-    response_msg = picaFunc.get_medication_msg(msg_info, parse_time_frame(TimeFrame))
+    response_msg, status = picaFunc.get_medication_msg(msg_info, parse_time_frame(TimeFrame))
     rootLogger.debug(response_msg)
     rootLogger.info('Retrieved medications msg')
+    usage_log(msg_info["Device ID"], 'Medication', msg_info["Request Timestamp"].isoformat(),
+              datetime.now().isoformat(), status)
     return statement(response_msg).simple_card(title='Get Medication', content = response_msg)
 
 
@@ -136,9 +164,11 @@ def get_food(TimeFrame):
     msg_info = get_msg_info()
     if not TimeFrame:
         TimeFrame= datetime.now().strftime('%Y-%m-%d')
-    response_msg = picaFunc.get_food_msg(msg_info, parse_time_frame(TimeFrame))
+    response_msg, status = picaFunc.get_food_msg(msg_info, parse_time_frame(TimeFrame))
     rootLogger.debug(response_msg)
     rootLogger.info('Retrieved food msg')
+    usage_log(msg_info["Device ID"], 'Food', msg_info["Request Timestamp"].isoformat(),
+              datetime.now().isoformat(), status)
     return statement(response_msg).simple_card(title='Get Food', content = response_msg)
 
 
@@ -164,9 +194,11 @@ def get_all(TimeFrame):
 def get_help():
     rootLogger.info('Request for help')
     msg_info = get_msg_info()
-    response_msg = picaFunc.get_help_msg(msg_info)
+    response_msg, status = picaFunc.get_help_msg(msg_info)
     rootLogger.debug(response_msg)
     rootLogger.info('Retrieved help msg')
+    usage_log(msg_info["Device ID"], 'Help', msg_info["Request Timestamp"].isoformat(),
+              datetime.now().isoformat(), status)
     return statement(response_msg).simple_card(title='Get Help', content = response_msg)
 
 
@@ -174,24 +206,27 @@ def get_help():
 def get_pledge():
     rootLogger.info('Request for pledge')
     msg_info = get_msg_info()
-    response_msg = pledgeFunc.get_pledge_msg(msg_info)
+    response_msg, status = pledgeFunc.get_pledge_msg(msg_info)
     rootLogger.debug(response_msg)
     rootLogger.info('Retrieved pledge msg')
-    usage_log(msg_info["Device ID"], 'pledge', msg_info["Request Timestamp"].strftime("%Y/%m/%d"), datetime.now().strftime("%Y/%m/%d"), 'success')
-    return statement(response_msg).simple_card(title='Get Pledge', content = response_msg)
+    #usage_log(msg_info["Device ID"], 'pledge', msg_info["Request Timestamp"].strftime("%Y/%m/%d"),
+    #          datetime.now().strftime("%Y/%m/%d"), 'success')
+    usage_log(msg_info["Device ID"], 'Pledge', msg_info["Request Timestamp"].isoformat(),
+              datetime.now().isoformat(), status)
+    return statement(response_msg).simple_card(title='Get Pledge', content=response_msg)
 
 
 @ask.intent('AMAZON.StopIntent')
 def stop_intent():
     bye_text = 'Ok... bye'
     return statement(bye_text)
-
+'''
 def db_connect():
     return boto3.client('dynamodb', aws_access_key_id = os.environ.get('DB_ACCESS_KEY_ID'),
                             aws_secret_access_key = os.environ.get('DB_SECRET'))
 
 def usage_log(userID, usageType, requestTimestamp, responseTimestamp, responseStatus):
-    rootlogger.debug('Connecting to DB')
+    rootLogger.debug('Connecting to DB')
     dynamo = db_connect()
     item = {
         'userID': {'S':userID},
@@ -202,10 +237,23 @@ def usage_log(userID, usageType, requestTimestamp, responseTimestamp, responseSt
     }
     dynamo.put_item(TableName = 'usage',Item = item)
     return rootLogger.debug('Logged usage')
+'''
+def usage_log(userID, usageType, requestTimestamp, responseTimestamp, responseStatus):
+    rootLogger.debug('Connecting to DB')
+    item = {
+        'userID': userID,
+        'usageType': usageType,
+        'requestTimestamp': requestTimestamp,
+        'responseTimestamp': responseTimestamp,
+        'responseStatus': responseStatus
+    }
+    dynamo.tables['alexausage'].put_item(Item=item)
+    return rootLogger.debug('Logged usage')
+
 
 
 if __name__ == '__main__':
     rootLogger.info('Started Up')
-    app.run(debug=True)  # need to change to False when pushing to production
+    app.run(debug=False)  # need to change to False when pushing to production
 
 
