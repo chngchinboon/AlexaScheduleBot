@@ -177,7 +177,7 @@ def get_food_msg(msg_info,time_frame):
             }
 
     foodlist, status = get_info_from_PICA(param)
-    if status == 'ok':
+    if status == 'success':
         if foodlist:
             food_msglist = []
 
@@ -208,7 +208,7 @@ def get_food_msg(msg_info,time_frame):
     #food_msg = "If you are not very hungry, you can have hot milo or porridge"
     rootLogger.info('Get food complete')
     rootLogger.debug(food_msg)
-    return food_msg
+    return food_msg, status
 
 def get_help_msg(msg_info):
     rootLogger.info('Getting help')
@@ -257,6 +257,8 @@ def get_info_from_PICA(param):
         pica_response = requests.get(url, params=data_to_send, timeout=2)
         pica_response.raise_for_status()
     except requests.exceptions.HTTPError as e:
+        status = e.__str__()
+        data_retrieved = ''
         rootLogger.debug(e)
     except requests.exceptions.ConnectionError as e:
         rootLogger.debug("Error Connecting:")
@@ -268,6 +270,8 @@ def get_info_from_PICA(param):
         data_retrieved = ''
     except requests.exceptions.RequestException as e:
         # catastrophic error. bail.
+        data_retrieved = ''
+        status = 'Unknown error'
         rootLogger.debug(e)
     else:
         data_retrieved = pica_response.json()
