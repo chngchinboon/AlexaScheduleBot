@@ -44,10 +44,10 @@ def get_appointment_msg(msg_info,time_frame):
                 if numappointments > 1:
                     appointment_msglist.append('Appointment {}:'.format(idx + 1))
 
-                if 'appointed_person' in appointment: # handle in-house appointment
+                if appointment['location']=='home': # handle in-house appointment
                     # Midday meal (service type) will arrive at date/time and be provided by Careworker Name (appointed_person)
-                    if appointment['service_type']:
-                        appointment_msglist.append(appointment['service_type'] + ' will arrive at')
+                    if appointment['name']:
+                        appointment_msglist.append(appointment['name'] + ' will arrive at')
                     if appointment['date']:
                         appointment_msglist.append(appointment['date'][0:10] + ',') #poor implementation! to revisit once PICA figures out what they have
                     if appointment['time']:
@@ -58,10 +58,10 @@ def get_appointment_msg(msg_info,time_frame):
                     if appointment['appointed_person']:
                         appointment_msglist.append('and be provided by ' + appointment['appointed_person'] + '.')
 
-                if 'location' in appointment: # handle out-house appointment
+                else: # handle out-house appointment
                     # (service_type) on date/time, at (location)
-                    if appointment['service_type']:
-                        appointment_msglist.append(appointment['service_type'])
+                    if appointment['name']:
+                        appointment_msglist.append(appointment['name'])
                     if appointment['date']:
                         appointment_msglist.append('on ' + appointment['date'][0:10] + ',') #poor implementation! to revisit once PICA figures out what they have
                     if appointment['time']:
@@ -123,12 +123,17 @@ def get_medication_msg(msg_info,time_frame):
             else:
                 medication_msglist.append('You have 1 medication. ')
 
+            prev_date=''
+            prev_time = ''
+
             for idx, medication in enumerate(medicationlist):
                 if nummedication > 1:
                     medication_msglist.append('Medication {}:'.format(idx + 1) + '.')
-                if medication['date']:
+                if medication['date'] and not prev_date == medication['date']: #group similar dates together
                     medication_msglist.append('On ' + medication['date'][0:10] + ',') #poor implementation! to revisit once PICA figures out what they have
-                if medication['time']:
+                    prev_date = medication['date']
+                if medication['time'] and not prev_time == medication['time']: #group similar times together <- may have error if spans multiple days
+                    prev_time = medication['time']
                     if 'nn' in medication['time']:
                         medication_msglist.append('at ' + medication['time'][0:2]+' noon') #poor implementation! to revisit once PICA figures out what they have
                     else:

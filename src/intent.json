@@ -81,6 +81,11 @@ GetAppointments where i have to go {TimeFrame}
 GetAppointments go where {TimeFrame}
 GetAppointments who is coming {TimeFrame}
 GetAppointments when coming {TimeFrame}
+GetAppointments what is happening {TimeFrame}
+GetAppointments what's happening {TimeFrame}
+GetAppointments what's on {TimeFrame}
+GetAppointments what is on {TimeFrame}
+
 
 GetMedication any medicine i need to take {TimeFrame}
 GetMedication what medicine do i need to eat {TimeFrame}
