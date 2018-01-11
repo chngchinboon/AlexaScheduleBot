@@ -33,46 +33,74 @@ def get_appointment_msg(msg_info,time_frame):
             appointmentslist = [x for x in appointmentslist if x is not None]  # handling weird occasional null output from pica
             numappointments = len(appointmentslist)
             appointment_msglist = []
-            # inside appointments
-            # Midday meal (service type) will arrive at date/time and be provided by Careworker Name (assigned careworker)
             if numappointments > 1:
-                appointment_msglist.append('You have {} appointments. '.format(numappointments))
+                appointment_msglist.append('You have, {}, events. '.format(numappointments))
             else:
-                appointment_msglist.append('You have 1 appointment. ')
+                appointment_msglist.append('You have, 1, events. ')
+
+            prev_date = ''
+            prev_time = ''
 
             for idx, appointment in enumerate(appointmentslist):
-                if numappointments > 1:
-                    appointment_msglist.append('Appointment {}:'.format(idx + 1))
-
-                if appointment['location']=='home': # handle in-house appointment
+                if appointment['service_type']=='Activities - indoor': #handle activities
+                    if numappointments > 1:
+                        appointment_msglist.append('. Activity, {}: . '.format(idx + 1))
                     # Midday meal (service type) will arrive at date/time and be provided by Careworker Name (appointed_person)
                     if appointment['name']:
-                        appointment_msglist.append(appointment['name'] + ' will arrive at')
-                    if appointment['date']:
-                        appointment_msglist.append(appointment['date'][0:10] + ',') #poor implementation! to revisit once PICA figures out what they have
-                    if appointment['time']:
+                        appointment_msglist.append(appointment['name'])
+
+                    if appointment['date'] and not prev_date == appointment['date']:
+                        appointment_msglist.append('on ' + appointment['date'][
+                                                   0:10] + ',')  # poor implementation! to revisit once PICA figures out what they have
+                        prev_date = appointment['date']
+                    if appointment['time'] and not prev_time == appointment['time']:
+                        prev_time = appointment['time']
                         if 'nn' in appointment['time']:
-                            appointment_msglist.append(appointment['time'][0:2]+' noon') #poor implementation! to revisit once PICA figures out what they have
+                            appointment_msglist.append(' at ' + appointment['time'][
+                                                       0:2] + ' noon. ')  # poor implementation! to revisit once PICA figures out what they have
                         else:
-                            appointment_msglist.append(appointment['time'])
+                            appointment_msglist.append(' at ' + appointment['time'] + '. ')
+
+                    if appointment['appointed_person']:
+                        appointment_msglist.append('and be provided by ' + appointment['appointed_person'] + '.')
+
+                elif appointment['location']=='home': # handle in-house appointment
+                    # Midday meal (service type) will arrive at date/time and be provided by Careworker Name (appointed_person)
+                    if numappointments > 1:
+                        appointment_msglist.append('. Appointment, {}: . '.format(idx + 1))
+                    if appointment['name']:
+                        appointment_msglist.append(appointment['name'] + ' will arrive at')
+                    if appointment['date'] and not prev_date == appointment['date']:
+                        appointment_msglist.append(appointment['date'][0:10] + ',') #poor implementation! to revisit once PICA figures out what they have
+                        prev_date = appointment['date']
+                    if appointment['time'] and not prev_time == appointment['time']:
+                        prev_time = appointment['time']
+                        if 'nn' in appointment['time']:
+                            appointment_msglist.append(appointment['time'][0:2]+' noon.') #poor implementation! to revisit once PICA figures out what they have
+                        else:
+                            appointment_msglist.append(appointment['time'] + '. ')
                     if appointment['appointed_person']:
                         appointment_msglist.append('and be provided by ' + appointment['appointed_person'] + '.')
 
                 else: # handle out-house appointment
                     # (service_type) on date/time, at (location)
+                    if numappointments > 1:
+                        appointment_msglist.append('. Appointment, {}: . '.format(idx + 1))
                     if appointment['name']:
                         appointment_msglist.append(appointment['name'])
-                    if appointment['date']:
+                    if appointment['date'] and not prev_date == appointment['date']:
                         appointment_msglist.append('on ' + appointment['date'][0:10] + ',') #poor implementation! to revisit once PICA figures out what they have
-                    if appointment['time']:
+                        prev_date = appointment['date']
+                    if appointment['time'] and not prev_time == appointment['time']:
+                        prev_time = appointment['time']
                         if 'nn' in appointment['time']:
-                            appointment_msglist.append(appointment['time'][0:2]+' noon') #poor implementation! to revisit once PICA figures out what they have
+                            appointment_msglist.append(appointment['time'][0:2]+' noon.') #poor implementation! to revisit once PICA figures out what they have
                         else:
-                            appointment_msglist.append(appointment['time'])
+                            appointment_msglist.append(appointment['time'] + '. ')
                     if appointment['location']:
                         appointment_msglist.append('at ' + appointment['location'] + '.')
 
-            appointment_msg = ' '.join(appointment_msglist)
+            appointment_msg = ', '.join(appointment_msglist)
 
         else:
             appointment_msg = 'You have no appointments.'
@@ -128,7 +156,7 @@ def get_medication_msg(msg_info,time_frame):
 
             for idx, medication in enumerate(medicationlist):
                 if nummedication > 1:
-                    medication_msglist.append('Medication {}:'.format(idx + 1) + '.')
+                    medication_msglist.append('. Medication {}:'.format(idx + 1) + '. ')
                 if medication['date'] and not prev_date == medication['date']: #group similar dates together
                     medication_msglist.append('On ' + medication['date'][0:10] + ',') #poor implementation! to revisit once PICA figures out what they have
                     prev_date = medication['date']
@@ -140,9 +168,9 @@ def get_medication_msg(msg_info,time_frame):
                         medication_msglist.append('at ' + medication['time'])
                 if medication['medications']:
                     for med in medication['medications']:
-                        medication_msglist.append(med + ',')
+                        medication_msglist.append(med + ', ')
 
-            medication_msg = ' '.join(medication_msglist)
+            medication_msg = ', '.join(medication_msglist)
 
         else:
             medication_msg = 'You have no medication to take.'
